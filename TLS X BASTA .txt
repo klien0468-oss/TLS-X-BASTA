@@ -1,0 +1,435 @@
+--[[https://github.com/Nebula-Softworks/Luna-Interface-Suite/blob/main/Documentation.md]]
+local Luna = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Softworks/Luna-Interface-Suite/refs/heads/master/source.lua", true))()
+
+local Window = Luna:CreateWindow({
+	Name = "Luna Example Window",
+	Subtitle = "A Gray Subtitle",
+	LogoID = "82795327169782",
+	LoadingEnabled = true,
+	LoadingTitle = "Luna Interface Suite",
+	LoadingSubtitle = "by Nebula Softworks",
+
+	ConfigSettings = {
+		RootFolder = nil,
+		ConfigFolder = "Big Hub"
+	},
+
+	KeySystem = true,
+	KeySettings = {
+		Title = "Luna Example Key",
+		Subtitle = "Key System",
+		Note = "Key là 1234!",
+		SaveInRoot = false,
+		SaveKey = true,
+		Key = {"1234"},
+		SecondAction = {
+			Enabled = true,
+			Type = "Link",
+			Parameter = ""
+		}
+	}
+})
+
+Window:CreateHomeTab({
+	SupportedExecutors = {
+		"Synapse X", "Krnl", "ProtoSmasher", "Fluxus", "Script-Ware",
+		"EasyExploits", "Electron", "JJSploit", "Calamari", "SirHurt",
+		"Sentinel", "WEAREDEVS", "Comet", "Cellery", "Wave", "CODex", "Delta"
+	},
+	DiscordInvite = "1234",
+	Icon = 1
+})
+
+local Tab = Window:CreateTab({
+	Name = "Player",
+	Icon = "person",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+local LocalPlayerTab = Window:CreateTab({
+    Name = "Local Player",
+    Icon = "account_circle", 
+    ImageSource = "Material",
+    ShowTitle = true
+})
+
+local TuLamTab = Window:CreateTab({
+    Name = "Script Tự Làm",
+    Icon = "trophy", 
+    ImageSource = "Material",
+    ShowTitle = true
+})
+
+local FloatEnabled = false
+local NoclipEnabled = false
+local InfiniteJumpEnabled = false
+local ESPEnabled = false 
+local SpeedEnabled = false
+local WalkSpeedValue = 16
+
+local NoclipConnection = nil
+local FloatConnection = nil
+local ESPConnection = nil 
+local CharacterAddedConnection = nil
+local Player = game.Players.LocalPlayer
+local FloatToggle
+
+_G.FriendColor = Color3.fromRGB(0, 0, 255)
+_G.EnemyColor = Color3.fromRGB(255, 0, 0)
+_G.UseTeamColor = true
+
+local function getCharacter()
+    local char = Player.Character
+    if char and char.Parent then return char end
+    return nil
+end
+
+local function setupFloat(char)
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    if FloatEnabled and humanoid then
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+        humanoid.PlatformStand = true
+    end
+end
+
+local function enableFloat()
+    if FloatEnabled then return end
+    FloatEnabled = true
+    local char = getCharacter()
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        Luna:Notification({ Title = "Lỗi", Icon = "error", ImageSource = "Material", Content = "Không tìm thấy Humanoid!" })
+        FloatEnabled = false
+        if FloatToggle then FloatToggle:SetValue(false) end
+        return
+    end
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+    humanoid.PlatformStand = true
+    FloatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        local currentChar = getCharacter()
+        if FloatEnabled and currentChar and currentChar.Parent then
+            local hrp = currentChar:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.Velocity = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z) end
+        end
+    end)
+    if CharacterAddedConnection then CharacterAddedConnection:Disconnect() end
+    CharacterAddedConnection = Player.CharacterAdded:Connect(function(newChar)
+        task.wait(0.5) setupFloat(newChar)
+    end)
+    Luna:Notification({ Title = "Float", Icon = "flight", ImageSource = "Material", Content = "Đã bật Float" })
+end
+
+local function disableFloat()
+    if not FloatEnabled then return end
+    FloatEnabled = false
+    if FloatConnection then FloatConnection:Disconnect() FloatConnection = nil end
+    if CharacterAddedConnection then CharacterAddedConnection:Disconnect() CharacterAddedConnection = nil end
+    local currentChar = getCharacter()
+    local currentHumanoid = currentChar and currentChar:FindFirstChildOfClass("Humanoid")
+    if currentHumanoid then
+        currentHumanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+        currentHumanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        currentHumanoid.PlatformStand = false
+    end
+    Luna:Notification({ Title = "Float", Icon = "flight", ImageSource = "Material", Content = "Đã tắt Float" })
+end
+
+local function enableNoclip()
+    if NoclipEnabled then return end
+    NoclipEnabled = true
+    local char = getCharacter()
+    if char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end
+    NoclipConnection = game:GetService("RunService").Stepped:Connect(function()
+        if NoclipEnabled then
+            local currentChar = getCharacter()
+            if currentChar then
+                for _, part in pairs(currentChar:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide == true then part.CanCollide = false end
+                end
+            end
+        end
+    end)
+    Luna:Notification({ Title = "Noclip", Icon = "layers", ImageSource = "Material", Content = "Đã bật Noclip" })
+end
+
+local function disableNoclip()
+    if not NoclipEnabled then return end
+    NoclipEnabled = false
+    if NoclipConnection then NoclipConnection:Disconnect() NoclipConnection = nil end
+    local char = getCharacter()
+    if char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = true end
+        end
+    end
+    Luna:Notification({ Title = "Noclip", Icon = "layers", ImageSource = "Material", Content = "Đã tắt Noclip" })
+end
+
+local function bringAllPlayer()
+    local targetPos = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not targetPos then
+        Luna:Notification({ Title = "Lỗi", Icon = "error", ImageSource = "Material", Content = "Không tìm thấy vị trí nhân vật!" })
+        return
+    end
+    local position = targetPos.Position
+    local count = 0
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= Player then
+            local otherChar = otherPlayer.Character
+            if otherChar and otherChar:FindFirstChild("HumanoidRootPart") then
+                otherChar.HumanoidRootPart.CFrame = CFrame.new(position)
+                count = count + 1
+            end
+        end
+    end
+    Luna:Notification({ Title = "Hoàn thành", Icon = "check", ImageSource = "Material", Content = "Đã kéo " .. count .. " người chơi!" })
+end
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfiniteJumpEnabled then
+        local char = getCharacter()
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:ChangeState("Jumping") end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if SpeedEnabled then
+            local char = Player.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid").WalkSpeed = WalkSpeedValue
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
+local function applyESP(target, color)
+    if target.Character and target.Character.Parent then
+        local highlight = target.Character:FindFirstChild("GetReal")
+        if not highlight then
+            highlight = Instance.new("Highlight")
+            highlight.RobloxLocked = true
+            highlight.Name = "GetReal"
+            highlight.Adornee = target.Character
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.FillColor = color
+            highlight.Parent = target.Character
+        else
+            highlight.FillColor = color
+        end
+    end
+end
+
+local function removeESP()
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v.Character and v.Character:FindFirstChild("GetReal") then v.Character.GetReal:Destroy() end
+    end
+end
+
+FloatToggle = LocalPlayerTab:CreateToggle({
+    Name = "Float",
+    Description = "Bật/tắt chế độ bay lơ lửng",
+    CurrentValue = false,
+    Callback = function(Value) if Value then enableFloat() else disableFloat() end end
+})
+
+local NoclipToggle = LocalPlayerTab:CreateToggle({
+    Name = "Noclip",
+    Description = "Bật/tắt chế độ đi xuyên tường",
+    CurrentValue = false,
+    Callback = function(Value) if Value then enableNoclip() else disableNoclip() end end
+})
+
+-- ĐÃ THAY: Nút Fly GUI V2 nằm ngay tại tab Local Player
+LocalPlayerTab:CreateButton({
+    Name = "Fly GUI V2",
+    Description = "Kích hoạt script Fly V2 chính chủ điều khiển bằng phím",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/klien0468-oss/Fly-gui-v2/refs/heads/main/fly%20gui%20v2.txt"))()
+        Luna:Notification({ Title = "Thành công", Icon = "flight_takeoff", ImageSource = "Material", Content = "Đã kích hoạt Fly GUI V2!" })
+    end
+})
+
+local InfJumpToggle = LocalPlayerTab:CreateToggle({
+    Name = "Infinite Jump",
+    Description = "Bật/tắt chế độ nhảy vô hạn trên không",
+    CurrentValue = false,
+    Callback = function(Value)
+        InfiniteJumpEnabled = Value
+        Luna:Notification({ Title = "Infinite Jump", Icon = "trending_up", ImageSource = "Material", Content = Value and "Đã bật Nhảy vô hạn" or "Đã tắt Nhảy vô hạn" })
+    end
+})
+
+local ESPToggle = LocalPlayerTab:CreateToggle({
+    Name = "Player ESP",
+    Description = "Bật/tắt nhìn xuyên tường người chơi",
+    CurrentValue = false,
+    Callback = function(Value)
+        ESPEnabled = Value
+        if Value then
+            ESPConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if ESPEnabled then
+                    for _, v in pairs(game.Players:GetPlayers()) do
+                        if v ~= Player then
+                            local finalColor = _G.UseTeamColor and v.TeamColor.Color or ((Player.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor)
+                            applyESP(v, finalColor)
+                        end
+                    end
+                end
+            end)
+            Luna:Notification({ Title = "ESP", Icon = "visibility", ImageSource = "Material", Content = "Đã bật định vị!" })
+        else
+            if ESPConnection then ESPConnection:Disconnect() ESPConnection = nil end
+            removeESP()
+            Luna:Notification({ Title = "ESP", Icon = "visibility_off", ImageSource = "Material", Content = "Đã tắt ESP!" })
+        end
+    end
+})
+
+local SpeedToggle = LocalPlayerTab:CreateToggle({
+    Name = "Enable Speed",
+    Description = "Bật/Tắt khóa tốc độ nhân vật",
+    CurrentValue = false,
+    Callback = function(Value)
+        SpeedEnabled = Value
+        if not Value then
+            local char = Player.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then char:FindFirstChildOfClass("Humanoid").WalkSpeed = 16 end
+        end
+        Luna:Notification({ Title = "Speed", Icon = "speed", ImageSource = "Material", Content = Value and "Đã bật tốc độ!" or "Đã tắt tốc độ!" })
+    end
+})
+
+local SpeedSlider = LocalPlayerTab:CreateSlider({
+    Name = "WalkSpeed Custom",
+    Range = {16, 500},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value) WalkSpeedValue = Value end
+}, "WalkSpeedSlider")
+
+LocalPlayerTab:CreateButton({
+    Name = "Bring All Player",
+    Description = "Đưa tất cả người chơi khác về vị trí của bạn",
+    Callback = function() bringAllPlayer() end
+})
+
+-- TAB SCRIPT TỰ LÀM: Chỉ giữ lại Silent Assassin
+TuLamTab:CreateButton({
+    Name = "Silent Assassin",
+    Description = "Kích hoạt script Silent Assassin tự làm",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/klien0468-oss/Silent-assasin-/refs/heads/main/Silent%20assasin%20.txt"))()
+        Luna:Notification({ Title = "Thành công", Icon = "gavel", ImageSource = "Material", Content = "Đã kích hoạt Silent Assassin!" })
+    end
+})
+-- ================= TAB BẦU TRỜI =================
+local BauTroiTab = Window:CreateTab({
+	Name = "Bầu trời",
+	Icon = "cloud",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+local function applySky(url, colorName)
+    loadstring(game:HttpGet(url, true))()
+    Luna:Notification({ Title = "Thành công", Icon = "check", ImageSource = "Material", Content = "Đã áp dụng bầu trời Màu " .. colorName .. "!" })
+end
+
+BauTroiTab:CreateButton({ Name = "Màu tím", Description = "Thay đổi bầu trời sang màu tím", Callback = function() applySky("https://pastefy.app/OzMbwM6R/raw", "tím") end })
+BauTroiTab:CreateButton({ Name = "Hồng (Client)", Description = "Thay đổi bầu trời sang màu hồng", Callback = function() applySky("https://pastefy.app/5ZfHKxpn/raw", "hồng") end })
+BauTroiTab:CreateButton({ Name = "Đỏ (Client)", Description = "Thay đổi bầu trời sang màu đỏ", Callback = function() applySky("https://pastefy.app/384ep7A7/raw", "đỏ") end })
+BauTroiTab:CreateButton({ Name = "Cam (Client)", Description = "Thay đổi bầu trời sang màu cam", Callback = function() applySky("https://pastefy.app/txTKOULw/raw", "cam") end })
+BauTroiTab:CreateButton({ Name = "Trắng (Client)", Description = "Thay đổi bầu trời sang màu trắng", Callback = function() applySky("https://pastefy.app/XFyGbhjs/raw", "trắng") end })
+BauTroiTab:CreateButton({ Name = "Vàng (Client)", Description = "Thay đổi bầu trời sang màu vàng", Callback = function() applySky("https://pastefy.app/5aeOfLjr/raw", "vàng") end })
+BauTroiTab:CreateButton({ Name = "Xanh Dương (Client)", Description = "Thay đổi bầu trời sang màu xanh dương", Callback = function() applySky("https://pastefy.app/1rojDnHp/raw", "xanh dương") end })
+BauTroiTab:CreateButton({ Name = "Xanh Lá (Client)", Description = "Thay đổi bầu trời sang màu xanh lá", Callback = function() applySky("https://pastefy.app/exRkmaVT/raw", "xanh lá") end })
+
+-- ================= THÔNG BÁO BAN ĐẦU =================
+Luna:Notification({
+	Title = "Luna Interface Suite",
+	Icon = "notifications_active",
+	ImageSource = "Material",
+	Content = "Hệ thống UI đã được nạp hoàn chỉnh!"
+})
+
+-- ================= CÁC THÀNH PHẦN TRONG TAB PLAYER GỐC =================
+local Button = Tab:CreateButton({
+	Name = "Button Example!",
+	Description = nil,
+	Callback = function() print("Button Example Pressed!") end
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Toggle Example",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value) print("Toggle state is:", Value) end
+}, "Toggle")
+
+Tab:CreateSection("This Is a section, below is a divider")
+Tab:CreateDivider()
+
+local Slider = Tab:CreateSlider({
+	Name = "Slider Example",
+	Range = {0, 200},
+	Increment = 5,
+	CurrentValue = 100,
+	Callback = function(Value) print("Slider value is:", Value) end
+}, "Slider")
+
+local ColorPicker = Tab:CreateColorPicker({
+	Name = "Color Picker Example",
+	Color = Color3.fromRGB(86, 171, 128),
+	Flag = "ColorPicker1",
+	Callback = function(Value) print("Selected Color RGB:", Value.R * 255, Value.G * 255, Value.B * 255) end
+}, "ColorPicker")
+
+local Input = Tab:CreateInput({
+	Name = "Dynamic Input Example",
+	Description = nil,
+	PlaceholderText = "Input Placeholder",
+	CurrentValue = "",
+	Numeric = false,
+	MaxCharacters = nil,
+	Enter = false,
+	Callback = function(Text) print("Input box text:", Text) end
+}, "Input")
+
+local Dropdown = Tab:CreateDropdown({
+	Name = "Dropdown Example",
+	Description = nil,
+	Options = { "Option 1", "Option 2", "Option 3", "Option 4", "Option 5" },
+	CurrentOption = {"Option 1"},
+	MultipleOptions = false,
+	SpecialType = nil,
+	Callback = function(Options) print("Dropdown selected:", Options) end
+}, "Dropdown")
+
+local Bind = Tab:CreateBind({
+	Name = "Bind Example",
+	Description = nil,
+	CurrentBind = "Q",
+	HoldToInteract = false,
+	Callback = function(BindState) print("Keybind activated. State:", BindState) end,
+	OnChangedCallback = function(Bind) print("Keybind changed to:", Bind.Name) end,
+}, "Bind")
+
+local Label1 = Tab:CreateLabel({ Text = "This is a Default Label", Style = 1 })
+local Paragraph = Tab:CreateParagraph({ Title = "Paragraph Example ", Text = "This Is A Paragraph." })
+
+-- ================= HỆ THỐNG TAB MẶC ĐỊNH LUNA =================
+local ThemeTab = Window:CreateTab({ Name = "Theme Tab", Icon = "palette", ImageSource = "Material", ShowTitle = true })
+ThemeTab:BuildThemeSection()
+
+local ConfigTab = Window:CreateTab({ Name = "Config Tab", Icon = "settings", ImageSource = "Material", ShowTitle = true })
+ConfigTab:BuildConfigSection()
