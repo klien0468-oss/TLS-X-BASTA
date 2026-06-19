@@ -433,3 +433,104 @@ ThemeTab:BuildThemeSection()
 
 local ConfigTab = Window:CreateTab({ Name = "Config Tab", Icon = "settings", ImageSource = "Material", ShowTitle = true })
 ConfigTab:BuildConfigSection()
+-- ================= TAB BẦU TRỜI =================
+local BauTroiTab = Window:CreateTab({
+	Name = "Bầu trời",
+	Icon = "cloud",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+local function applySky(url, colorName)
+    loadstring(game:HttpGet(url, true))()
+    Luna:Notification({ Title = "Thành công", Icon = "check", ImageSource = "Material", Content = "Đã áp dụng bầu trời Màu " .. colorName .. "!" })
+end
+
+BauTroiTab:CreateButton({ Name = "Màu tím", Description = "Thay đổi bầu trời sang màu tím", Callback = function() applySky("https://pastefy.app/OzMbwM6R/raw", "tím") end })
+BauTroiTab:CreateButton({ Name = "Hồng (Client)", Description = "Thay đổi bầu trời sang màu hồng", Callback = function() applySky("https://pastefy.app/5ZfHKxpn/raw", "hồng") end })
+BauTroiTab:CreateButton({ Name = "Đỏ (Client)", Description = "Thay đổi bầu trời sang màu đỏ", Callback = function() applySky("https://pastefy.app/384ep7A7/raw", "đỏ") end })
+BauTroiTab:CreateButton({ Name = "Cam (Client)", Description = "Thay đổi bầu trời sang màu cam", Callback = function() applySky("https://pastefy.app/txTKOULw/raw", "cam") end })
+BauTroiTab:CreateButton({ Name = "Trắng (Client)", Description = "Thay đổi bầu trời sang màu trắng", Callback = function() applySky("https://pastefy.app/XFyGbhjs/raw", "trắng") end })
+BauTroiTab:CreateButton({ Name = "Vàng (Client)", Description = "Thay đổi bầu trời sang màu vàng", Callback = function() applySky("https://pastefy.app/5aeOfLjr/raw", "vàng") end })
+BauTroiTab:CreateButton({ Name = "Xanh Dương (Client)", Description = "Thay đổi bầu trời sang màu xanh dương", Callback = function() applySky("https://pastefy.app/1rojDnHp/raw", "xanh dương") end })
+BauTroiTab:CreateButton({ Name = "Xanh Lá (Client)", Description = "Thay đổi bầu trời sang màu xanh lá", Callback = function() applySky("https://pastefy.app/exRkmaVT/raw", "xanh lá") end })
+
+-- ================= THÔNG BÁO BAN ĐẦU =================
+Luna:Notification({
+	Title = "Luna Interface Suite",
+	Icon = "notifications_active",
+	ImageSource = "Material",
+	Content = "Hệ thống UI đã được nạp hoàn chỉnh!"
+})
+
+-- ================= CÁC THÀNH PHẦN TRONG TAB PLAYER GỐC =================
+local Button = Tab:CreateButton({
+	Name = "Button Example!",
+	Description = nil,
+	Callback = function() print("Button Example Pressed!") end
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Toggle Example",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value) print("Toggle state is:", Value) end
+}, "Toggle")
+
+Tab:CreateSection("This Is a section, below is a divider")
+Tab:CreateDivider()
+
+local Slider = Tab:CreateSlider({
+	Name = "Slider Example",
+	Range = {0, 200},
+	Increment = 5,
+	CurrentValue = 100,
+	Callback = function(Value) print("Slider value is:", Value) end
+}, "Slider")
+
+local ColorPicker = Tab:CreateColorPicker({
+	Name = "Color Picker Example",
+	Color = Color3.fromRGB(86, 171, 128),
+	Flag = "ColorPicker1",
+	Callback = function(Value) print("Selected Color RGB:", Value.R * 255, Value.G * 255, Value.B * 255) end
+}, "ColorPicker")
+
+local Input = Tab:CreateInput({
+	Name = "Dynamic Input Example",
+	Description = nil,
+	PlaceholderText = "Input Placeholder",
+	CurrentValue = "",
+	Numeric = false,
+	MaxCharacters = nil,
+	Enter = false,
+	Callback = function(Text) print("Input box text:", Text) end
+}, "Input")
+
+local Dropdown = Tab:CreateDropdown({
+	Name = "Dropdown Example",
+	Description = nil,
+	Options = { "Option 1", "Option 2", "Option 3", "Option 4", "Option 5" },
+	CurrentOption = {"Option 1"},
+	MultipleOptions = false,
+	SpecialType = nil,
+	Callback = function(Options) print("Dropdown selected:", Options) end
+}, "Dropdown")
+
+local Bind = Tab:CreateBind({
+	Name = "Bind Example",
+	Description = nil,
+	CurrentBind = "Q",
+	HoldToInteract = false,
+	Callback = function(BindState) print("Keybind activated. State:", BindState) end,
+	OnChangedCallback = function(Bind) print("Keybind changed to:", Bind.Name) end,
+}, "Bind")
+
+local Label1 = Tab:CreateLabel({ Text = "This is a Default Label", Style = 1 })
+local Paragraph = Tab:CreateParagraph({ Title = "Paragraph Example ", Text = "This Is A Paragraph." })
+
+-- ================= HỆ THỐNG TAB MẶC ĐỊNH LUNA =================
+local ThemeTab = Window:CreateTab({ Name = "Theme Tab", Icon = "palette", ImageSource = "Material", ShowTitle = true })
+ThemeTab:BuildThemeSection()
+
+local ConfigTab = Window:CreateTab({ Name = "Config Tab", Icon = "settings", ImageSource = "Material", ShowTitle = true })
+ConfigTab:BuildConfigSection()
